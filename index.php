@@ -28,40 +28,60 @@ $tasks = [
 	[
 		'task' => 'Собеседование в IT компании',
 		'dateDeadline' => '01.06.2018',
-		'category' => 'Работа',
+		'project' => 'Работа',
 		'done' => 'Нет'
 	],
 	[
 		'task' => 'Выполнить тестовое задание',
 		'dateDeadline' => '25.05.2018',
-		'category' => 'Работа',
+		'project' => 'Работа',
 		'done' => 'Нет'
 	],
 	[
 		'task' => 'Сделать задание первого раздела',
 		'dateDeadline' => '21.04.2018',
-		'category' => 'Учеба',
+		'project' => 'Учеба',
 		'done' => 'Да'
 	],
 	[
 		'task' => 'Встреча с другом',
 		'dateDeadline' => '22.04.2018',
-		'category' => 'Входящие',
+		'project' => 'Входящие',
 		'done' => 'Нет'
 	],
 	[
 		'task' => 'Купить корм для кота',
 		'dateDeadline' => 'Нет',
-		'category' => 'Домашние дела',
+		'project' => 'Домашние дела',
 		'done' => 'Нет'
 	],
 	[
 		'task' => 'Заказать пиццу',
 		'dateDeadline' => 'Нет',
-		'category' => 'Домашние дела',
+		'project' => 'Домашние дела',
 		'done' => 'Нет'
 	]
 ];
+
+
+function countTasks($tasks, $nameProject) {
+
+	if ($nameProject == 'Все') {
+
+		return count($tasks);
+
+	} else {
+
+		$amount = 0;
+		foreach ($tasks as $k => $val) {
+			if ($val['project'] == $nameProject) {
+				$amount++;
+			}
+		}
+		return $amount;
+	}
+
+}
 
 
 ?>
@@ -112,7 +132,7 @@ $tasks = [
           	<?php foreach ($projects as $k => $val): ?>
           		<li class="main-navigation__list-item <?php if ($k == 0) print('main-navigation__list-item--active') ?>">
           		  <a class="main-navigation__list-item-link" href="#"><?= $val ?></a>
-          		  <span class="main-navigation__list-item-count">?</span>
+          		  <span class="main-navigation__list-item-count"><?= countTasks($tasks, $val) ?></span>
           		</li>
           	<?php endforeach ?>
           </ul>
