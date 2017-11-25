@@ -2,8 +2,11 @@
 
 require_once('functions.php');
 
+// print_r('<pre>');
+// var_dump($errors);
+// print_r('</pre>');
 
-// переменные
+// данные
 
 date_default_timezone_set('Europe/Moscow');
 $current_ts = strtotime('now midnight');
@@ -60,10 +63,11 @@ $tasks = [
 ];
 
 
+// метод GET
+
 $projectKey = $_GET[project] ?? false;
 
 if ($projectKey) {
-
 	if (count($projects) > $projectKey) {
 		foreach ($tasks as $k => $val) {
 			if ($val['project'] == $projects[$projectKey]) {
@@ -74,19 +78,76 @@ if ($projectKey) {
 		http_response_code(404);
 		exit('<b>Ошибка 404</b>');
 	}
-	
 } else {
 	$tasksSelect = $tasks;
 }
 
+if (isset($_GET[add])) {
+	$add = true;
+	$modal = includeTemplate('templates/modal.php', 
+	[
+		'projects' => $projects,
+	]);
+}
+
+
+// метод POST
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+	$required = ['name', 'project', 'date']; 
+	$rules = ['date']; 
+	$errors = [];
+	$values = [];
+
+  $nameNew = $_POST['name'] ?? '';
+  $projectNew = $_POST['project'] ?? '';
+  $dateNew = $_POST['date'] ?? '';
+
+	foreach ($_POST as $k => $val) {
+		$values = $_POST;
+		if (in_array($k, $required) && $val == '') { 
+			$errors[$k] = 'это поле требуется заполнить';
+		}
+		if (in_array($k, $rules) && !($val == '')) { 
+			if (!strtotime($val)) {
+		    $errors[$k] = 'неверный формат';
+		  }
+		}
+	}
+
+	if (count($errors)) {
+		$add = true;
+		$modal = includeTemplate('templates/modal.php', 
+		[
+			'projects' => $projects,
+			'errors' => $errors,
+			'values' => $values,
+		]);
+	} else {
+		if (isset($_FILES['preview']['name'])) {
+			$fileName = $_FILES['preview']['name'];
+			$fileTempPath = $_FILES['preview']['tmp_name'];
+			$filePath = __DIR__.'/'.$fileName;
+			move_uploaded_file($fileTempPath, $filePath);
+		}
+		$taskNew = [
+			'task' => $nameNew,
+			'dateDeadline' => $dateNew,
+			'project' => $projectNew,
+			'done' => 'Нет'
+		];
+		$tasksSelect[] = $taskNew;
+	}
+
+}
 
 
 // подключение шаблонов
 
 $content = includeTemplate('templates/index.php', 
 [
-	'tasks' => $tasksSelect
-
+	'tasks' => $tasksSelect,
 ]);
 
 $page = includeTemplate('templates/layout.php', 
@@ -95,12 +156,12 @@ $page = includeTemplate('templates/layout.php',
   'projects' => $projects,
   'tasks' => $tasks,
   'title' => $title,
-  'fio' => $fio
+  'fio' => $fio,
+  'add' => $add,
+  'modal' => $modal,
 ]);
 
 print($page);
 
-
-?>
 
 
