@@ -36,7 +36,11 @@
         		  <td class="task__select">
         		    <label class="checkbox task__checkbox">
         		      <input class="checkbox__input visually-hidden" type="checkbox" >
-        		      <a href="/"><span class="checkbox__text"><?= $val['task'] ?></span></a>
+        		      <a href="/"><span class="checkbox__text">
+
+                    <?= $val['task'] ?>
+
+                    </span></a>
         		    </label>
         		  </td>
 
@@ -46,7 +50,7 @@
         		  <td class="task__date"><?= $val['dateDeadline'] ?></td>
         		</tr>
 
-        	<?php endforeach ?>
+        	<?php endforeach; ?>
 
 	<!-- Добавьте класс task--important, если до выполнения задачи меньше дня-->
          <!--  <tr class="tasks__item task <?php if ($days_until_deadline < 1) print("task--important") ?>">

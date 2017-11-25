@@ -43,7 +43,7 @@
           <ul class="main-navigation__list">
           	<?php foreach ($projects as $k => $val): ?>
           		<li class="main-navigation__list-item <?php if ($k == 0) print('main-navigation__list-item--active') ?>">
-          		  <a class="main-navigation__list-item-link" href="#"><?= $val ?></a>
+          		  <a class="main-navigation__list-item-link" href="index.php<?php if ($k) print('?project='.$k)?>"><?= $val ?></a>
           		  <span class="main-navigation__list-item-count"><?= countTasks($tasks, $val) ?></span>
           		</li>
           	<?php endforeach ?>
