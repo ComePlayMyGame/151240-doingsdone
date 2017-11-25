@@ -2,15 +2,13 @@
 
 require_once('functions.php');
 
-// устанавливаем часовой пояс в Московское время
+
+// переменные
+
 date_default_timezone_set('Europe/Moscow');
-// текущая метка времени
 $current_ts = strtotime('now midnight');
-
 $show_complete_tasks = 1;
-
 $title = 'Дела в порядке';
-
 $fio = 'Константин';
 
 $projects = [
@@ -62,7 +60,35 @@ $tasks = [
 ];
 
 
-$content = includeTemplate('templates/index.php', ['tasks' => $tasks]);
+$projectKey = $_GET[project] ?? false;
+
+if ($projectKey) {
+
+	if (count($projects) > $projectKey) {
+		foreach ($tasks as $k => $val) {
+			if ($val['project'] == $projects[$projectKey]) {
+				$tasksSelect[] = $val;
+			}
+		}
+	} else {
+		http_response_code(404);
+		exit('<b>Ошибка 404</b>');
+	}
+	
+} else {
+	$tasksSelect = $tasks;
+}
+
+
+
+// подключение шаблонов
+
+$content = includeTemplate('templates/index.php', 
+[
+	'tasks' => $tasksSelect
+
+]);
+
 $page = includeTemplate('templates/layout.php', 
 [
   'content' => $content,
