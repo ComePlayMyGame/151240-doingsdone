@@ -16,13 +16,13 @@
           </nav>
 
           <label class="checkbox">
-            <a href="/">
+
+            <a href="index.php?show_completed=<?=$show_completed?>">
               <!--добавить сюда аттрибут "checked", если переменная $show_complete_tasks равна единице-->
-              <input class="checkbox__input visually-hidden" type="checkbox" 
-              <?php if ($show_complete_tasks == 1) print(checked) ?>
-              >
+              <input class="checkbox__input visually-hidden" type="checkbox" <?=$checked?>>
               <span class="checkbox__text">Показывать выполненные</span>
             </a>
+
           </label>
         </div>
 

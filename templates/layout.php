@@ -29,7 +29,7 @@
           <div class="user-menu__data">
             <p><?=$fio ?></p>
 
-            <a href="#">Выйти</a>
+            <a href="logout.php">Выйти</a>
           </div>
         </div>
       </div>
@@ -106,7 +106,7 @@
 
   <h2 class="modal__heading">Добавление проекта</h2>
 
-  <form class="form"  action="index.html" method="post">
+  <form class="form"  action="index.php" method="post">
     <div class="form__row">
       <label class="form__label" for="project_name">Название <sup>*</sup></label>
 
@@ -114,7 +114,7 @@
     </div>
 
     <div class="form__row form__row--controls">
-      <input class="button" type="submit" name="" value="Добавить">
+      <input class="button" type="submit" name="projectSubmit" value="Добавить">
     </div>
   </form>
 </div>
