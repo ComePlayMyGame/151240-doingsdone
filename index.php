@@ -1,6 +1,8 @@
 <?php
+session_start();
 
 require_once('functions.php');
+require_once('userdata.php');
 
 // print_r('<pre>');
 // var_dump($errors);
@@ -10,9 +12,8 @@ require_once('functions.php');
 
 date_default_timezone_set('Europe/Moscow');
 $current_ts = strtotime('now midnight');
-$show_complete_tasks = 1;
 $title = 'Дела в порядке';
-$fio = 'Константин';
+// $fio = 'Константин';
 
 $projects = [
 	'Все',
@@ -63,9 +64,71 @@ $tasks = [
 ];
 
 
+// если АВТОРИЗОВАННЫЙ
+
+if (isset($_SESSION["user"])) {
+
+	$fio = $_SESSION["user"]['name'];
+	
+	// отправка формы
+
+	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+	// добавление задачи
+		// if (isset($_POST['taskSubmit'])) {
+
+		$required = ['name', 'project', 'date']; 
+		$rules = ['date']; 
+		$errors = [];
+		$values = [];
+
+	  $nameNew = $_POST['name'] ?? '';
+	  $projectNew = $_POST['project'] ?? '';
+	  $dateNew = $_POST['date'] ?? '';
+
+		foreach ($_POST as $k => $val) {
+			$values = $_POST;
+			if (in_array($k, $required) && $val == '') { 
+				$errors[$k] = 'это поле требуется заполнить';
+			}
+			if (in_array($k, $rules) && !($val == '')) { 
+				if (!strtotime($val)) {
+			    $errors[$k] = 'неверный формат';
+			  }
+			}
+		}
+
+		if (count($errors)) {
+			$add = true;
+			$modal = includeTemplate('templates/modal.php', 
+			[
+				'projects' => $projects,
+				'errors' => $errors,
+				'values' => $values,
+			]);
+		} else {
+			if (isset($_FILES['preview']['name'])) {
+				$fileName = $_FILES['preview']['name'];
+				$fileTempPath = $_FILES['preview']['tmp_name'];
+				$filePath = __DIR__.'/'.$fileName;
+				move_uploaded_file($fileTempPath, $filePath);
+			}
+			$taskNew = [
+				'task' => $nameNew,
+				'dateDeadline' => $dateNew,
+				'project' => $projectNew,
+				'done' => 'Нет'
+			];
+			$tasksSelect[] = $taskNew;
+		}
+
+		// }  
+	}
+
+
 // метод GET
 
-$projectKey = $_GET[project] ?? false;
+$projectKey = $_GET['project'] ?? false;
 
 if ($projectKey) {
 	if (count($projects) > $projectKey) {
@@ -82,7 +145,7 @@ if ($projectKey) {
 	$tasksSelect = $tasks;
 }
 
-if (isset($_GET[add])) {
+if (isset($_GET['add'])) {
 	$add = true;
 	$modal = includeTemplate('templates/modal.php', 
 	[
@@ -90,66 +153,45 @@ if (isset($_GET[add])) {
 	]);
 }
 
-
-// метод POST
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-	$required = ['name', 'project', 'date']; 
-	$rules = ['date']; 
-	$errors = [];
-	$values = [];
-
-  $nameNew = $_POST['name'] ?? '';
-  $projectNew = $_POST['project'] ?? '';
-  $dateNew = $_POST['date'] ?? '';
-
-	foreach ($_POST as $k => $val) {
-		$values = $_POST;
-		if (in_array($k, $required) && $val == '') { 
-			$errors[$k] = 'это поле требуется заполнить';
-		}
-		if (in_array($k, $rules) && !($val == '')) { 
-			if (!strtotime($val)) {
-		    $errors[$k] = 'неверный формат';
-		  }
-		}
-	}
-
-	if (count($errors)) {
-		$add = true;
-		$modal = includeTemplate('templates/modal.php', 
-		[
-			'projects' => $projects,
-			'errors' => $errors,
-			'values' => $values,
-		]);
-	} else {
-		if (isset($_FILES['preview']['name'])) {
-			$fileName = $_FILES['preview']['name'];
-			$fileTempPath = $_FILES['preview']['tmp_name'];
-			$filePath = __DIR__.'/'.$fileName;
-			move_uploaded_file($fileTempPath, $filePath);
-		}
-		$taskNew = [
-			'task' => $nameNew,
-			'dateDeadline' => $dateNew,
-			'project' => $projectNew,
-			'done' => 'Нет'
-		];
-		$tasksSelect[] = $taskNew;
-	}
-
+if (isset($_GET['show_completed'])) {
+	$show_completed = $_GET['show_completed'];
+	setcookie('showCompleted', $show_completed, strtotime("+30 days"));
+	header('Location: /index.php');
 }
 
 
-// подключение шаблонов
+// куки
+
+if (isset($_COOKIE['showCompleted'])) {
+	if ($_COOKIE['showCompleted']) {
+		$checked = 'checked';
+		$show_completed = 0;
+	} else {
+		$checked = '';
+		$show_completed = 1;
+		foreach ($tasksSelect as $k => $val) {
+			if ($val['done'] == 'Да') {
+				unset($tasksSelect[$k]);
+			}
+		}
+	}
+} else {
+		$checked = '';
+		$show_completed = 1;
+		foreach ($tasksSelect as $k => $val) {
+			if ($val['done'] == 'Да') {
+				unset($tasksSelect[$k]);
+			}
+		}
+}
+
 
 $content = includeTemplate('templates/index.php', 
 [
 	'tasks' => $tasksSelect,
+	'show_completed' => $show_completed,
+	'checked' => $checked,
 ]);
-
 $page = includeTemplate('templates/layout.php', 
 [
   'content' => $content,
@@ -160,8 +202,66 @@ $page = includeTemplate('templates/layout.php',
   'add' => $add,
   'modal' => $modal,
 ]);
-
 print($page);
 
 
+// если ГОСТЬ
+
+} else {
+
+
+// отправка формы
+
+	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+		// if (isset($_POST['loginSubmit'])) {}
+
+		$required = ['email', 'password']; 
+		$errors = [];
+		$values = [];
+
+	  // $nameNew = $_POST['name'] ?? '';
+	  // $projectNew = $_POST['project'] ?? '';
+	  // $dateNew = $_POST['date'] ?? '';
+
+		foreach ($_POST as $k => $val) {
+			$values = $_POST;
+			if (in_array($k, $required) && $val == '') { 
+				$errors[$k] = 'это поле требуется заполнить';
+			}
+		}
+
+		if (count($errors)) {
+			$login = true;
+		} else {
+			$user = searchUserByEmail($values['email'], $users);
+			if ($user) {
+			  if (password_verify($values['password'], $user['password'])) {
+			    $_SESSION['user'] = $user;
+			    header("Location: /index.php");
+			  } else {
+			  	$login = true;
+			  	$errors['password'] = 'Вы ввели неверный пароль';
+			  }
+			} else {
+				$login = true;
+				$errors['email'] = 'Такой логин не найден';
+			}
+		}
+
+	}
+
+	if (isset($_GET['login'])) {
+		$login = true;
+	}
+
+	$guest = includeTemplate('templates/guest.php', 
+	[
+		'login' => $login,
+		'errors' => $errors,
+		'values' => $values,
+	]);
+	print($guest);
+
+}
 

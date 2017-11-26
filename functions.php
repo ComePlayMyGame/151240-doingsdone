@@ -14,6 +14,7 @@ function countTasks($tasks, $nameProject) {
 	}
 }
 
+
 function includeTemplate($path, $data) {
 
 	if (file_exists($path)) {
@@ -31,6 +32,20 @@ function includeTemplate($path, $data) {
 
 	return '';
 }
+
+
+function searchUserByEmail($email, $users) {
+
+  foreach ($users as $val) {
+    if ($val['email'] == $email) {
+        return $val;
+    }
+  }
+
+  return false;
+}
+
+
 
 
 
