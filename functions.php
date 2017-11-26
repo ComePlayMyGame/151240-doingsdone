@@ -49,6 +49,4 @@ function searchUserByEmail($email, $users) {
 
 
 
-
-
 ?>
