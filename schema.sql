@@ -5,15 +5,15 @@ USE doingdone;
 CREATE TABLE user (
   id INT AUTO_INCREMENT PRIMARY KEY,
   regDate DATETIME,
-  email CHAR,
-  name CHAR,
-  password CHAR(32),
+  email CHAR(100),
+  name CHAR(100),
+  password CHAR(60),
   contacts TEXT
 );
 
 CREATE TABLE project (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  name CHAR,
+  name CHAR(100),
   id_user INT
 );
 
@@ -31,4 +31,4 @@ CREATE TABLE task (
 
 CREATE UNIQUE INDEX iu_u_email ON user(email);
 CREATE UNIQUE INDEX iu_p_name ON project(name);
-CREATE INDEX i_t_name ON task(name(100));
+CREATE INDEX i_t_name ON task(name(10));
