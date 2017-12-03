@@ -49,4 +49,3 @@ function searchUserByEmail($email, $users) {
 
 
 
-?>
