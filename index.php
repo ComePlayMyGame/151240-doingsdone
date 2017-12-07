@@ -3,12 +3,9 @@ session_start();
 
 require_once('functions.php');
 require_once('mysql_helper.php');
-require_once('userdata.php');
+// require_once('userdata.php');
 require_once('init.php');
 
-// print_r('<pre>');
-// var_dump($errors);
-// print_r('</pre>');
 
 // данные
 
@@ -17,53 +14,91 @@ $current_ts = strtotime('now midnight');
 $title = 'Дела в порядке';
 // $fio = 'Константин';
 
-$projects = [
-	'Все',
-	'Входящие',
-	'Учеба',
-	'Работа',
-	'Домашние дела',
-	'Авто'
-];
 
-$tasks = [
-	[
-		'task' => 'Собеседование в IT компании',
-		'dateDeadline' => '01.06.2018',
-		'project' => 'Работа',
-		'done' => 'Нет'
-	],
-	[
-		'task' => 'Выполнить тестовое задание',
-		'dateDeadline' => '25.05.2018',
-		'project' => 'Работа',
-		'done' => 'Нет'
-	],
-	[
-		'task' => 'Сделать задание первого раздела',
-		'dateDeadline' => '21.04.2018',
-		'project' => 'Учеба',
-		'done' => 'Да'
-	],
-	[
-		'task' => 'Встреча с другом',
-		'dateDeadline' => '22.04.2018',
-		'project' => 'Входящие',
-		'done' => 'Нет'
-	],
-	[
-		'task' => 'Купить корм для кота',
-		'dateDeadline' => 'Нет',
-		'project' => 'Домашние дела',
-		'done' => 'Нет'
-	],
-	[
-		'task' => 'Заказать пиццу',
-		'dateDeadline' => 'Нет',
-		'project' => 'Домашние дела',
-		'done' => 'Нет'
-	]
-];
+// $tasks = [
+// 	[
+// 		'task' => 'Собеседование в IT компании',
+// 		'dateDeadline' => '01.06.2018',
+// 		'project' => 'Работа',
+// 		'done' => 'Нет'
+// 	],
+// 	[
+// 		'task' => 'Выполнить тестовое задание',
+// 		'dateDeadline' => '25.05.2018',
+// 		'project' => 'Работа',
+// 		'done' => 'Нет'
+// 	],
+// 	[
+// 		'task' => 'Сделать задание первого раздела',
+// 		'dateDeadline' => '21.04.2018',
+// 		'project' => 'Учеба',
+// 		'done' => 'Да'
+// 	],
+// 	[
+// 		'task' => 'Встреча с другом',
+// 		'dateDeadline' => '22.04.2018',
+// 		'project' => 'Входящие',
+// 		'done' => 'Нет'
+// 	],
+// 	[
+// 		'task' => 'Купить корм для кота',
+// 		'dateDeadline' => 'Нет',
+// 		'project' => 'Домашние дела',
+// 		'done' => 'Нет'
+// 	],
+// 	[
+// 		'task' => 'Заказать пиццу',
+// 		'dateDeadline' => 'Нет',
+// 		'project' => 'Домашние дела',
+// 		'done' => 'Нет'
+// 	]
+// ];
+
+$sql = "
+SELECT `email`, `name`, `password` FROM `user` 
+";
+
+$query = mysqli_query($connect, $sql);
+
+if ($query) {
+	$users = mysqli_fetch_all($query, MYSQLI_ASSOC);
+} else {
+	$error = mysqli_error($connect);
+	$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+	print($page);
+	exit();
+}
+
+// print_r($users);
+
+
+	$sql = "
+	SELECT `tasks`.`task`, `dateDeadline`, `done`, `projects`.`project` FROM `tasks` 
+	JOIN `projects` 
+	ON `id_project` = `projects`.`id`
+	-- WHERE `projects`.`project` = 'учеба'
+	";
+
+	$query = mysqli_query($connect, $sql);
+	
+	if ($query) {
+
+		$tasks = mysqli_fetch_all($query, MYSQLI_ASSOC);
+
+		// foreach ($tasksArray as $k => $val) {
+		// 	$tasks[] = $val['name'];
+		// }
+
+		// print_r("<pre>");
+		// var_dump($tasksArray);
+		// print_r("</pre>");
+
+	} else {
+		$error = mysqli_error($connect);
+		$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+		print($page);
+		exit();
+	}
 
 
 // если АВТОРИЗОВАННЫЙ
@@ -71,7 +106,43 @@ $tasks = [
 if (isset($_SESSION["user"])) {
 
 	$fio = $_SESSION["user"]['name'];
+
+	$sql = "
+	SELECT `projects`.`project` FROM `projects`
+	JOIN `user`
+	ON `id_user` = `user`.`id`
+	WHERE `user`.`name` = '$fio'
+	";
+
+	$query = mysqli_query($connect, $sql);
 	
+	if ($query) {
+		$projectsArray = mysqli_fetch_all($query, MYSQLI_ASSOC);
+
+		foreach ($projectsArray as $k => $val) {
+			$projects[] = $val['project'];
+		}
+
+		// print_r("<pre>");
+		// var_dump($projects);
+		// print_r("</pre>");
+
+	} else {
+		$error = mysqli_error($connect);
+		$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+		print($page);
+		exit();
+	}
+
+// 	$projects = [
+// 	'Все',
+// 	'Входящие',
+// 	'Учеба',
+// 	'Работа',
+// 	'Домашние дела',
+// 	'Авто'
+// ];
+
 	// отправка формы
 
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -79,8 +150,8 @@ if (isset($_SESSION["user"])) {
 	// добавление задачи
 		// if (isset($_POST['taskSubmit'])) {
 
-		$required = ['name', 'project', 'date']; 
-		$rules = ['date']; 
+		$required = ['name', 'project', 'date'];
+		$rules = ['date'];
 		$errors = [];
 		$values = [];
 
@@ -114,14 +185,54 @@ if (isset($_SESSION["user"])) {
 				$fileTempPath = $_FILES['preview']['tmp_name'];
 				$filePath = __DIR__.'/'.$fileName;
 				move_uploaded_file($fileTempPath, $filePath);
+			} else {
+				$fileTempPath = '';
 			}
-			$taskNew = [
-				'task' => $nameNew,
-				'dateDeadline' => $dateNew,
-				'project' => $projectNew,
-				'done' => 'Нет'
-			];
-			$tasksSelect[] = $taskNew;
+			// $taskNew = [
+				// 'task' => $nameNew,
+				// 'dateDeadline' => $dateNew,
+				// 'project' => $projectNew,
+				// 'done' => 'Нет',
+			// ];
+			// $tasksSelect[] = $taskNew;
+
+			$sql = "
+			SELECT `projects`.`id` FROM `projects`
+			JOIN `user`
+			ON `id_user` = `user`.`id`
+			WHERE 
+			`name` = '$fio' && `project` = '$projectNew'
+			";
+
+			$query = mysqli_query($connect, $sql);
+			if ($query) {
+				$projectID = mysqli_fetch_array($query, MYSQLI_NUM);
+			} else {
+				$error = mysqli_error($connect);
+				$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+				print($page);
+				exit();
+			}
+
+			$sql = "
+			INSERT INTO `tasks` SET
+			`create_date` = 'NOW()',
+			`task` = '$nameNew',
+			`dateDeadline` = '$dateNew',
+			`id_project` = '$projectID[0]',
+			`done` = '0',
+			`file` = '$fileTempPath'
+			";
+
+			$query = mysqli_query($connect, $sql);
+			if ($query) {
+				header('location: /index.php');
+			} else {
+				$error = mysqli_error($connect);
+				$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+				print($page);
+				exit();
+			}
 		}
 
 		// }  
@@ -216,9 +327,9 @@ print($page);
 
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-		// if (isset($_POST['loginSubmit'])) {}
+		if (isset($_POST['loginSubmit'])) {
 
-		$required = ['email', 'password']; 
+		$required = ['email', 'password'];
 		$errors = [];
 		$values = [];
 
@@ -228,7 +339,7 @@ print($page);
 
 		foreach ($_POST as $k => $val) {
 			$values = $_POST;
-			if (in_array($k, $required) && $val == '') { 
+			if (in_array($k, $required) && $val == '') {
 				$errors[$k] = 'это поле требуется заполнить';
 			}
 		}
@@ -253,8 +364,80 @@ print($page);
 
 	}
 
+	if (isset($_POST['registerSubmit'])) {
+
+			$required = ['email', 'password', 'name'];
+			$errors = [];
+			$values = [];
+
+		  $nameUser = $_POST['name'] ?? '';
+		  $emailUser = $_POST['email'] ?? '';
+		  $passwordUser = $_POST['password'] ?? '';
+
+			foreach ($_POST as $k => $val) {
+
+				$values = $_POST;
+
+				if (in_array($k, $required) && $val == '') {
+					$errors[$k] = 'это поле требуется заполнить';
+				} else {
+						foreach ($users as $val) {
+							if ($emailUser == $val['email']) {
+								$errors['email'] = 'такой email уже существует';
+							}
+						}
+				}
+
+			}
+
+			// var_dump("один ".$emailUser." два ".$users['email']);
+			// var_dump($users['email']);
+			foreach ($users as $k => $val) {
+				
+			}
+
+			if (count($errors)) {
+				$register = true;
+				$page_reg = includeTemplate('templates/register.php', 
+				[
+					'register' => $register,
+					'errors' => $errors,
+					'values' => $values,
+				]);
+				print($page_reg);
+
+			} else {
+
+				$passwordHash = password_hash($passwordUser, PASSWORD_DEFAULT);
+
+				$sql = "
+				INSERT INTO `user`
+				(`reg_date`, `email`, `name`, `password`)
+				VALUES
+				(NOW(), '$emailUser', '$nameUser', '$passwordHash')
+				";
+
+				$query = mysqli_query($connect, $sql);
+				if ($query) {
+					header('location: /index.php?login');
+				} else {
+					$error = mysqli_error($connect);
+					$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+					print($page);
+					exit();
+				}
+
+			}
+
+	}
+
+
+	}
+
 	if (isset($_GET['login'])) {
 		$login = true;
+	} else if (isset($_GET['register'])) {
+		print(includeTemplate('templates/register.php', []));
 	}
 
 	$guest = includeTemplate('templates/guest.php', 
