@@ -69,14 +69,11 @@ if ($query) {
 	exit();
 }
 
-// print_r($users);
-
 
 	$sql = "
-	SELECT `tasks`.`task`, `dateDeadline`, `done`, `projects`.`project` FROM `tasks` 
+	SELECT `tasks`.`id`, `tasks`.`task`, `dateDeadline`, `done`, `projects`.`project` FROM `tasks` 
 	JOIN `projects` 
 	ON `id_project` = `projects`.`id`
-	-- WHERE `projects`.`project` = 'учеба'
 	";
 
 	$query = mysqli_query($connect, $sql);
@@ -233,6 +230,7 @@ if (isset($_SESSION["user"])) {
 				print($page);
 				exit();
 			}
+
 		}
 
 		// }  
@@ -240,6 +238,123 @@ if (isset($_SESSION["user"])) {
 
 
 // метод GET
+
+$userId = $_GET['done'] ?? false;
+
+
+if ($userId) {
+
+		foreach ($tasks as $val) {
+			if ($val['id'] == $userId) {
+				$yn_done = $val['done'];
+			}
+		}
+
+	// foreach ($tasks as $val) {
+		// if ($val['id'] == $userId) {
+
+	// $sql = "
+	// SELECT done FROM `tasks`
+	// WHERE id = $userId
+	// ";
+
+	// $query = mysqli_query($connect, $sql);
+	// if ($query) {
+	// 	$done = mysqli_fetch_all($query, MYSQLI_ASSOC);
+	// 	print_r($done);
+
+	// 	// header('location: /index.php');
+	// } else {
+	// 	$error = mysqli_error($connect);
+	// 	$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+	// 	print($page);
+	// 	exit();
+	// }
+
+
+	// if ($yn_done == 1) {
+
+	//     $sql = "
+	//     UPDATE tasks SET 
+	//     done = 0 
+	//     WHERE id = $userId
+	//     ";
+
+ //    	$query = mysqli_query($connect, $sql);
+	//     	if ($query) {
+	//     		header('Location: /index.php');
+	//     	} else {
+	//     		$error = mysqli_error($connect);
+	//     		$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+	//     		print($page);
+	//     		exit();
+	//     	}
+
+	//     }
+
+	// 		else if ($yn_done == 0) {
+	//         $sql = "
+	//         UPDATE tasks SET 
+	//         done = 1 
+	//         WHERE id = $userId
+	//         ";
+
+	//         	$query = mysqli_query($connect, $sql);
+	//         	if ($query) {
+	//         		header('Location: /index.php');
+	//         	} else {
+	//         		$error = mysqli_error($connect);
+	//         		$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+	//         		print($page);
+	//         		exit();
+	//         	}
+
+	//         }
+	
+
+
+			$sql = "
+			UPDATE  tasks
+			SET     done = IF(done = 1, 0, 1)
+			WHERE   id = $userId
+			";
+
+			$query = mysqli_query($connect, $sql);
+			if ($query) {
+				header('Location: /index.php');
+			} else {
+				$error = mysqli_error($connect);
+				$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+				print($page);
+				exit();
+			}
+
+
+
+			// $sql = "
+			// INSERT INTO `tasks` SET
+			// `create_date` = 'NOW()',
+			// `task` = '$nameNew',
+			// `dateDeadline` = '$dateNew',
+			// `id_project` = '$projectID[0]',
+			// `done` = '0',
+			// `file` = '$fileTempPath'
+			// ";
+
+			// $query = mysqli_query($connect, $sql);
+			// if ($query) {
+			// 	header('location: /index.php');
+			// } else {
+			// 	$error = mysqli_error($connect);
+			// 	$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+			// 	print($page);
+			// 	exit();
+			// }
+
+		// }
+	// }
+}
+
 
 $projectKey = $_GET['project'] ?? false;
 
