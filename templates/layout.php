@@ -19,7 +19,7 @@
       </a>
 
       <div class="main-header__side">
-        <a class="main-header__side-item button button--plus" href="index.php?add">Добавить задачу</a>
+        <a class="main-header__side-item button button--plus" href="index.php?add=taskModal">Добавить задачу</a>
 
         <div class="main-header__side-item user-menu">
           <div class="user-menu__image">
@@ -42,15 +42,15 @@
         <nav class="main-navigation">
           <ul class="main-navigation__list">
           	<?php foreach ($projects as $k => $val): ?>
-          		<li class="main-navigation__list-item <?php if ($k == 0) print('main-navigation__list-item--active') ?>">
-          		  <a class="main-navigation__list-item-link" href="index.php<?php if ($k) print('?project='.$k)?>"><?= $val ?></a>
+          		<li class="main-navigation__list-item <?php if ($_GET['project'] == $k) print('main-navigation__list-item--active') ?>">
+          		  <a class="main-navigation__list-item-link" href="index.php<?php print('?project='.$k)?>"><?= $val ?></a>
           		  <span class="main-navigation__list-item-count"><?= countTasks($tasks, $val) ?></span>
           		</li>
           	<?php endforeach ?>
           </ul>
         </nav>
 
-        <a class="button button--transparent button--plus content__side-button" href="#">Добавить проект</a>
+        <a class="button button--transparent button--plus content__side-button" href="index.php?add=projectModal">Добавить проект</a>
       </section>
 
       <main class="content__main">
@@ -68,7 +68,7 @@
       <p>Веб-приложение для удобного ведения списка дел.</p>
     </div>
 
-    <a href="index.php?add" class="main-footer__button button button--plus">Добавить задачу</a>
+    <a href="index.php?add=taskModal" class="main-footer__button button button--plus">Добавить задачу</a>
 
     <div class="main-footer__social social">
       <span class="visually-hidden">Мы в соцсетях:</span>
@@ -101,22 +101,5 @@
 
 <?= $modal ?>
 
-<div class="modal" hidden>
-  <button class="modal__close" type="button" name="button">Закрыть</button>
-
-  <h2 class="modal__heading">Добавление проекта</h2>
-
-  <form class="form"  action="index.php" method="post">
-    <div class="form__row">
-      <label class="form__label" for="project_name">Название <sup>*</sup></label>
-
-      <input class="form__input" type="text" name="name" id="project_name" value="" placeholder="Введите название проекта">
-    </div>
-
-    <div class="form__row form__row--controls">
-      <input class="button" type="submit" name="projectSubmit" value="Добавить">
-    </div>
-  </form>
-</div>
 </body>
 </html>

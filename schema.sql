@@ -20,11 +20,11 @@ CREATE TABLE projects (
 CREATE TABLE tasks (
   id INT AUTO_INCREMENT PRIMARY KEY,
   create_date DATETIME,
-  done_date DATETIME,
+  done_date DATE,
   task TEXT,
-  file TEXT,
-  dateDeadline DATETIME,
-  done TINYINT(1),
+  file TEXT DEFAULT NULL,
+  dateDeadline DATE,
+  done TINYINT(1) DEFAULT 0,
   id_project INT,
   id_user INT
 );
