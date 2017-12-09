@@ -221,7 +221,7 @@ if (isset($_SESSION["user"])) {
 
 			$sql = "
 			INSERT INTO `tasks` SET
-			`create_date` = 'NOW()',
+			`create_date` = NOW(),
 			`task` = '$nameNew',
 			`dateDeadline` = '$dateNew',
 			`id_project` = '$projectID[0]',
