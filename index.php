@@ -26,8 +26,6 @@ if ($query) {
 	exit();
 }
 
-
-
 // если АВТОРИЗОВАННЫЙ
 
 if (isset($_SESSION["user"])) {
