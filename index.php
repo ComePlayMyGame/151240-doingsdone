@@ -6,52 +6,10 @@ require_once('mysql_helper.php');
 require_once('init.php');
 
 
-// данные
-
 date_default_timezone_set('Europe/Moscow');
 $current_ts = strtotime('now midnight');
 $title = 'Дела в порядке';
-// $fio = 'Константин';
 
-
-// $tasks = [
-// 	[
-// 		'task' => 'Собеседование в IT компании',
-// 		'dateDeadline' => '01.06.2018',
-// 		'project' => 'Работа',
-// 		'done' => 'Нет'
-// 	],
-// 	[
-// 		'task' => 'Выполнить тестовое задание',
-// 		'dateDeadline' => '25.05.2018',
-// 		'project' => 'Работа',
-// 		'done' => 'Нет'
-// 	],
-// 	[
-// 		'task' => 'Сделать задание первого раздела',
-// 		'dateDeadline' => '21.04.2018',
-// 		'project' => 'Учеба',
-// 		'done' => 'Да'
-// 	],
-// 	[
-// 		'task' => 'Встреча с другом',
-// 		'dateDeadline' => '22.04.2018',
-// 		'project' => 'Входящие',
-// 		'done' => 'Нет'
-// 	],
-// 	[
-// 		'task' => 'Купить корм для кота',
-// 		'dateDeadline' => 'Нет',
-// 		'project' => 'Домашние дела',
-// 		'done' => 'Нет'
-// 	],
-// 	[
-// 		'task' => 'Заказать пиццу',
-// 		'dateDeadline' => 'Нет',
-// 		'project' => 'Домашние дела',
-// 		'done' => 'Нет'
-// 	]
-// ];
 
 $sql = "
 SELECT `email`, `name`, `password` FROM `user` 
@@ -77,6 +35,7 @@ if (isset($_SESSION["user"])) {
 		$emailSID = $_SESSION['user']['email'];
 		$fio = $_SESSION["user"]['name'];
 
+		$fio = mysqli_real_escape_string($connect, $fio);
 
 		$sql = "
 		SELECT `tasks`.`id`, `file`, `tasks`.`task`, `dateDeadline`, `done`, `projects`.`project` FROM `tasks` 
@@ -105,7 +64,7 @@ if (isset($_SESSION["user"])) {
 	SELECT `projects`.`project` FROM `projects`
 	JOIN `user`
 	ON `id_user` = `user`.`id`
-	WHERE `user`.`name` = '$fio'
+	WHERE	`email` = '$emailSID'
 	";
 
 	$query = mysqli_query($connect, $sql);
@@ -116,6 +75,7 @@ if (isset($_SESSION["user"])) {
 		foreach ($projectsArray as $k => $val) {
 			$projects[] = $val['project'];
 		}
+
 
 	} else {
 		$error = mysqli_error($connect);
@@ -138,15 +98,6 @@ if (isset($_SESSION["user"])) {
 		print($page);
 		exit();
 	}
-
-// 	$projects = [
-// 	'Все',
-// 	'Входящие',
-// 	'Учеба',
-// 	'Работа',
-// 	'Домашние дела',
-// 	'Авто'
-// ];
 
 	// отправка формы
 
@@ -187,119 +138,103 @@ if (isset($_SESSION["user"])) {
 				'values' => $values,
 				'taskModal' => $taskModal,
 			]);
+
 		} else {
 
-			if (isset($_FILES['preview']['name'])) {
-				$fileName = $_FILES['preview']['name'];
-				$fileTempPath = $_FILES['preview']['tmp_name'];
-				$filePath = __DIR__.'/'.$fileName;
-				move_uploaded_file($fileTempPath, $filePath);
-			} else {
-				$fileName = NULL;
-			}
+				if (isset($_FILES['preview']['name'])) {
+					$fileName = $_FILES['preview']['name'];
+					$fileTempPath = $_FILES['preview']['tmp_name'];
+					$filePath = __DIR__.'/'.$fileName;
+					move_uploaded_file($fileTempPath, $filePath);
+				} else {
+					$fileName = NULL;
+				}
 
-			$sql = "
-			SELECT `projects`.`id` FROM `projects`
-			JOIN `user`
-			ON `id_user` = `user`.`id`
-			WHERE 
-			`name` = '$fio' && `project` = '$projectNew'
-			";
+				$sql = "
+				SELECT `projects`.`id` FROM `projects`
+				JOIN `user`
+				ON `id_user` = `user`.`id`
+				WHERE	`email` = '$emailSID' && `project` = '$projectNew'
+				";
 
-			$query = mysqli_query($connect, $sql);
-			if ($query) {
-				$projectID = mysqli_fetch_array($query, MYSQLI_NUM);
-			} else {
-				$error = mysqli_error($connect);
-				$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-				print($page);
-				exit();
-			}
+				$query = mysqli_query($connect, $sql);
+				if ($query) {
+					$projectID = mysqli_fetch_array($query, MYSQLI_NUM);
+				} else {
+					$error = mysqli_error($connect);
+					$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+					print($page);
+					exit();
+				}
 
-			$dateNewTS = strtotime($dateNew);
-			$dateNew = date('Y.m.d', $dateNewTS);
+				$dateNewTS = strtotime($dateNew);
+				$dateNew = date('Y.m.d', $dateNewTS);
 
-			$sql = "
-			INSERT INTO `tasks` SET
-			`create_date` = NOW(),
-			`task` = '$nameNew',
-			`dateDeadline` = '$dateNew',
-			`id_project` = '$projectID[0]',
-			`done` = '0',
-			`file` = '$fileName',
-			`id_user` = '$userID[0]'
-			";
+				$nameNew = mysqli_real_escape_string($connect, $nameNew);
 
-			$query = mysqli_query($connect, $sql);
-			if ($query) {
-				header('location: /index.php');
-			} else {
-				$error = mysqli_error($connect);
-				$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-				print($page);
-				exit();
+				$sql = "
+				INSERT INTO `tasks` SET
+				`create_date` = NOW(),
+				`task` = '$nameNew',
+				`dateDeadline` = '$dateNew',
+				`id_project` = '$projectID[0]',
+				`done` = '0',
+				`file` = '$fileName',
+				`id_user` = '$userID[0]'
+				";
+
+				$query = mysqli_query($connect, $sql);
+				if ($query) {
+					header('location: /index.php');
+				} else {
+					$error = mysqli_error($connect);
+					$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+					print($page);
+					exit();
+				}
 			}
 
 		}
 
-		}  
-
+	// добавление проекта
 		if (isset($_POST['projectSubmit'])) {
 
 			$name = $_POST['name'] ?? '';
 
-				if ($name == '') {
-					$error = 'заполните это поле';
-					$add = true;
-					$projectModal = true;
-					$modal = includeTemplate('templates/modal.php', 
-					[
-						'projects' => $projects,
-						'error' => $error,
-						'values' => $values,
-						'projectModal' => $projectModal
-					]);
-				} else {
-
-			// $sql = "
-			// SELECT `id` FROM `user`
-			// WHERE `email` = '$emailSID'
-			// ";
-
-			// $query = mysqli_query($connect, $sql);
-			// if ($query) {
-			// 	$userID = mysqli_fetch_array($query, MYSQLI_NUM);
-			// } else {
-			// 	$error = mysqli_error($connect);
-			// 	$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-			// 	print($page);
-			// 	exit();
-			// }
-
-
-			$sql = "
-			INSERT INTO `projects` SET
-			`project` = '$name',
-			`id_user` = '$userID[0]'
-			";
-
-			$query = mysqli_query($connect, $sql);
-			if ($query) {
-				header('location: /index.php');
+			if ($name == '') {
+				$error = 'заполните это поле';
+				$add = true;
+				$projectModal = true;
+				$modal = includeTemplate('templates/modal.php', 
+				[
+					'projects' => $projects,
+					'error' => $error,
+					'values' => $values,
+					'projectModal' => $projectModal
+				]);
 			} else {
-				$error = mysqli_error($connect);
-				$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-				print($page);
-				exit();
+
+				$name = mysqli_real_escape_string($connect, $name);
+
+				$sql = "
+				INSERT INTO `projects` SET
+				`project` = '$name',
+				`id_user` = '$userID[0]'
+				";
+
+				$query = mysqli_query($connect, $sql);
+				if ($query) {
+					header('location: /index.php');
+				} else {
+					$error = mysqli_error($connect);
+					$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+					print($page);
+					exit();
+				}
+
 			}
-
-
-		}
-
-
 		}
 	}
-
 
 
 // методы GET
@@ -346,15 +281,11 @@ if (isset($_GET['tomorrow'])) {
 if (isset($_GET['overdue'])) {
 	foreach ($tasks as $k => $val) {
 
-		// if () {
-			$task_deadline_ts = strtotime($val['dateDeadline']);
-			$days_until_deadline = floor(($task_deadline_ts - $current_ts)/86400);
-			if (!($days_until_deadline < 0)) {
-				unset($tasksSelect[$k]);
-				// $tasksSelect[] = $val;
-			}
-		// }
-
+		$task_deadline_ts = strtotime($val['dateDeadline']);
+		$days_until_deadline = floor(($task_deadline_ts - $current_ts)/86400);
+		if (!($days_until_deadline < 0)) {
+			unset($tasksSelect[$k]);
+		}
 	}
 }
 
@@ -363,25 +294,23 @@ $userId = $_GET['done'] ?? false;
 
 if ($userId) {
 
-			$sql = "
-			UPDATE `tasks` SET
-			`done` = IF (`done` = 0, 1, 0),
-			`done_date` = IF (`done` = 1, NOW(), NULL)
-			WHERE `id` = $userId
-			";
+	$sql = "
+	UPDATE `tasks` SET
+	`done` = IF (`done` = 0, 1, 0),
+	`done_date` = IF (`done` = 1, NOW(), NULL)
+	WHERE `id` = $userId
+	";
 
-			$query = mysqli_query($connect, $sql);
-			if ($query) {
-				header('Location: /index.php');
-			} else {
-				$error = mysqli_error($connect);
-				$page = includeTemplate('templates/error.php', ['error' => $error]);
-				print($page);
-				exit();
-			}
+	$query = mysqli_query($connect, $sql);
+	if ($query) {
+		header('Location: /index.php');
+	} else {
+		$error = mysqli_error($connect);
+		$page = includeTemplate('templates/error.php', ['error' => $error]);
+		print($page);
+		exit();
+	}
 }
-
-
 
 $addVal = $_GET['add'] ?? '';
 
@@ -462,6 +391,7 @@ print($page);
 
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
+// залогиниться
 		if (isset($_POST['loginSubmit'])) {
 
 		$required = ['email', 'password'];
@@ -494,10 +424,11 @@ print($page);
 		}
 
 	}
-
+// зарегиться
 	if (isset($_POST['registerSubmit'])) {
 
 			$required = ['email', 'password', 'name'];
+			$filter = ['email'];
 			$errors = [];
 			$values = [];
 
@@ -511,17 +442,19 @@ print($page);
 
 				if (in_array($k, $required) && $val == '') {
 					$errors[$k] = 'это поле требуется заполнить';
-				} else {
-						foreach ($users as $val) {
-							if ($emailUser == $val['email']) {
-								$errors['email'] = 'такой email уже существует';
+				} else if (in_array($k, $filter)) {
+
+					$filtered = filter_var($val, FILTER_VALIDATE_EMAIL);
+					if ($filtered) {
+							foreach ($users as $val) {
+								if ($emailUser == $val['email']) {
+									$errors[$k] = 'такой email уже существует';
+								}
 							}
-						}
+					} else {
+						$errors[$k] = 'неверный формат email';
+					}
 				}
-
-			}
-
-			foreach ($users as $k => $val) {
 				
 			}
 
@@ -538,6 +471,8 @@ print($page);
 			} else {
 
 				$passwordHash = password_hash($passwordUser, PASSWORD_DEFAULT);
+
+				$nameUser = mysqli_real_escape_string($connect, $nameUser);
 
 				$sql = "
 				INSERT INTO `user`
@@ -581,7 +516,6 @@ print($page);
 			}
 
 	}
-
 
 	}
 

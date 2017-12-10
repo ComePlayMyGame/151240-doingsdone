@@ -38,7 +38,7 @@
         		      <input class="checkbox__input visually-hidden" type="checkbox" >
         		      <a href="/index.php?done=<?= $val['id'] ?>"><span class="checkbox__text">
 
-                    <?= $val['task'] ?>
+                    <?= htmlspecialchars($val['task']) ?>
 
                     </span></a>
         		    </label>

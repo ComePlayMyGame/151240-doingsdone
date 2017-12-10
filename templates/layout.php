@@ -27,7 +27,7 @@
           </div>
 
           <div class="user-menu__data">
-            <p><?=$fio ?></p>
+            <p><?= htmlspecialchars($fio) ?></p>
 
             <a href="logout.php">Выйти</a>
           </div>
@@ -43,7 +43,7 @@
           <ul class="main-navigation__list">
           	<?php foreach ($projects as $k => $val): ?>
           		<li class="main-navigation__list-item <?php if ($_GET['project'] == $k) print('main-navigation__list-item--active') ?>">
-          		  <a class="main-navigation__list-item-link" href="index.php<?php print('?project='.$k)?>"><?= $val ?></a>
+          		  <a class="main-navigation__list-item-link" href="index.php<?php print('?project='.$k)?>"><?= htmlspecialchars($val) ?></a>
           		  <span class="main-navigation__list-item-count"><?= countTasks($tasks, $val) ?></span>
           		</li>
           	<?php endforeach ?>
