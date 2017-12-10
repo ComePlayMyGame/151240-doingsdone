@@ -8,33 +8,59 @@
   <link rel="stylesheet" href="../css/style.css">
 </head>
 
-<body class="body-background <?php if ($login) print('overlay') ?>"><!--class="overlay"-->
+<body><!--class="overlay"-->
   <h1 class="visually-hidden">Дела в порядке</h1>
 
   <div class="page-wrapper">
-    <div class="container">
+    <div class="container container--with-sidebar">
       <header class="main-header">
-        <a href="#">
+        <a href="/">
           <img src="../img/logo.png" width="153" height="42" alt="Логитип Дела в порядке">
         </a>
-
-        <div class="main-header__side">
-          <a class="main-header__side-item button button--transparent" href="index.php?login">Войти</a>
-        </div>
       </header>
 
       <div class="content">
-        <section class="welcome">
-          <h2 class="welcome__heading">«Дела в порядке»</h2>
+        <section class="content__side">
+          <p class="content__side-info">Если у вас уже есть аккаунт, авторизуйтесь на сайте</p>
 
-          <div class="welcome__text">
-            <p>«Дела в порядке» — это веб приложение для удобного ведения списка дел. Сервис помогает пользователям не забывать о предстоящих важных событиях и задачах.</p>
-
-            <p>После создания аккаунта, пользователь может начать вносить свои дела, деля их по проектам и указывая сроки.</p>
-          </div>
-
-          <a class="welcome__button button" href="index.php?register">Зарегистрироваться</a>
+          <a class="button button--transparent content__side-button" href="?login">Войти</a>
         </section>
+
+        <main class="content__main">
+          <h2 class="content__main-heading">Регистрация аккаунта</h2>
+
+          <form class="form" action="index.php" method="post">
+            <div class="form__row">
+              <label class="form__label" for="email">E-mail <sup>*</sup></label>
+
+              <input class="form__input <?php if ($errors['email']) print('form__input--error')?>" type="text" name="email" id="email" value="<?php if ($values['email']) print($values['email']) ?>" placeholder="Введите e-mail">
+
+              <p class="form__message"><?php if ($errors['email']) print($errors['email'])?></p>
+            </div>
+
+            <div class="form__row">
+              <label class="form__label" for="password">Пароль <sup>*</sup></label>
+
+              <input class="form__input <?php if ($errors['password']) print('form__input--error')?>" type="password" name="password" id="password" value="" placeholder="Введите пароль">
+
+              <p class="form__message"><?php if ($errors['password']) print($errors['password'])?></p>
+            </div>
+
+            <div class="form__row">
+              <label class="form__label" for="name">Имя <sup>*</sup></label>
+
+              <input class="form__input <?php if ($errors['name']) print('form__input--error')?>" type="text" name="name" id="name" value="<?php if ($values['name']) print($values['name']) ?>" placeholder="Введите имя">
+
+              <p class="form__message"><?php if ($errors['name']) print($errors['name'])?></p>
+            </div>
+
+            <div class="form__row form__row--controls">
+              <p class="error-message"><?php if ($errors) print('Пожалуйста, исправьте ошибки в форме') ?></p>
+
+              <input class="button" type="submit" name="registerSubmit" value="Зарегистрироваться">
+            </div>
+          </form>
+        </main>
       </div>
     </div>
   </div>
@@ -77,33 +103,5 @@
       </div>
     </div>
   </footer>
-
-  <div class="modal" <?php if (!$login) print('hidden') ?>>
-    <button class="modal__close" type="button" name="button">Закрыть</button>
-
-    <h2 class="modal__heading">Вход на сайт</h2>
-
-    <form class="form" action="index.php" method="post">
-      <div class="form__row">
-        <label class="form__label" for="email">E-mail <sup>*</sup></label>
-
-        <input class="form__input  <?php if ($errors['email']) print('form__input--error')?>" type="text" name="email" id="email" value="<?php if ($values['email']) print($values['email']) ?>" placeholder="Введите e-mail">
-
-        <p class="form__message"><?php if ($errors['email']) print($errors['email'])?></p>
-      </div>
-
-      <div class="form__row">
-        <label class="form__label" for="password">Пароль <sup>*</sup></label>
-
-        <input class="form__input <?php if ($errors['password']) print('form__input--error')?>" type="password" name="password" id="password" value="" placeholder="Введите пароль">
-
-        <p class="form__message"><?php if ($errors['password']) print($errors['password'])?></p>
-      </div>
-
-      <div class="form__row form__row--controls">
-        <input class="button" type="submit" name="loginSubmit" value="Войти">
-      </div>
-    </form>
-  </div>
 </body>
 </html>

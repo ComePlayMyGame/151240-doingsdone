@@ -9,10 +9,10 @@
 
         <div class="tasks-controls">
           <nav class="tasks-switch">
-            <a href="/" class="tasks-switch__item tasks-switch__item--active">Все задачи</a>
-            <a href="/" class="tasks-switch__item">Повестка дня</a>
-            <a href="/" class="tasks-switch__item">Завтра</a>
-            <a href="/" class="tasks-switch__item">Просроченные</a>
+            <a href="/index.php" class="tasks-switch__item <?php if (!isset($_GET['today']) && !isset($_GET['tomorrow']) && !isset($_GET['overdue'])) print('tasks-switch__item--active') ?>">Все задачи</a>
+            <a href="/index.php?today" class="tasks-switch__item <?php if (isset($_GET['today'])) print('tasks-switch__item--active') ?>">Повестка дня</a>
+            <a href="/index.php?tomorrow" class="tasks-switch__item <?php if (isset($_GET['tomorrow'])) print('tasks-switch__item--active') ?>">Завтра</a>
+            <a href="/index.php?overdue" class="tasks-switch__item <?php if (isset($_GET['overdue'])) print('tasks-switch__item--active') ?>">Просроченные</a>
           </nav>
 
           <label class="checkbox">
@@ -31,27 +31,27 @@
 
         		<tr class="tasks__item task 
         		<?php 
-		        			if ($val['done'] == 'Да') print('task--completed');
+		        			if ($val['done'] == 1) print('task--completed');
         		?>">
         		  <td class="task__select">
         		    <label class="checkbox task__checkbox">
         		      <input class="checkbox__input visually-hidden" type="checkbox" >
-        		      <a href="/"><span class="checkbox__text">
+        		      <a href="/index.php?done=<?= $val['id'] ?>"><span class="checkbox__text">
 
-                    <?= $val['task'] ?>
+                    <?= htmlspecialchars($val['task']) ?>
 
                     </span></a>
         		    </label>
         		  </td>
 
         		  <td class="task__file">
-                
+                <a href="/<?= $val['file'] ?>"><?php if (isset($val['file'])) print($val['file']) ?> </a>
         		  </td>
 
         		  <td class="task__date"><?= $val['dateDeadline'] ?></td>
         		</tr>
 
-        	<?php endforeach; ?>
+        	<?php endforeach ?>
 
 	<!-- Добавьте класс task--important, если до выполнения задачи меньше дня-->
          <!--  <tr class="tasks__item task <?php if ($days_until_deadline < 1) print("task--important") ?>">

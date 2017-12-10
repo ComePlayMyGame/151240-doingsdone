@@ -1,4 +1,4 @@
-  <div class="modal">
+  <div class="modal" <?php if (!$taskModal) print('hidden') ?>>
     <button class="modal__close" type="button" name="button">Закрыть</button>
 
     <h2 class="modal__heading">Добавление задачи</h2>
@@ -47,7 +47,7 @@
 
         <input class="form__input form__input--date
         <?php if ($errors['date']) print('form__input--error')?>
-        " type="date" name="date" id="date" value="<?php if ($values['date']) print($values['date']) ?>" placeholder="Введите дату в формате ДД.ММ.ГГГГ">
+        " type="" name="date" id="date" value="<?php if ($values['date']) print($values['date']) ?>" placeholder="Введите дату в формате ДД.ММ.ГГГГ">
 
         <p class="form__message"><?php if ($errors['date']) print($errors['date'])?></p>
         
@@ -70,3 +70,24 @@
       </div>
     </form>
   </div>
+
+  <div class="modal" <?php if (!$projectModal) print('hidden') ?>>
+  <button class="modal__close" type="button" name="button">Закрыть</button>
+
+  <h2 class="modal__heading">Добавление проекта</h2>
+
+  <form class="form"  action="index.php" method="post">
+    <div class="form__row">
+      <label class="form__label" for="project_name">Название <sup>*</sup></label>
+
+
+      <input class="form__input" type="text" name="name" id="project_name" value="" placeholder="Введите название проекта">
+      <p class="form__message"><?=$error?></p>
+
+    </div>
+
+    <div class="form__row form__row--controls">
+      <input class="button" type="submit" name="projectSubmit" value="Добавить">
+    </div>
+  </form>
+</div>
