@@ -1,4 +1,7 @@
 <?php
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+
 session_start();
 
 require_once('functions.php');
@@ -20,10 +23,7 @@ $query = mysqli_query($connect, $sql);
 if ($query) {
 	$users = mysqli_fetch_all($query, MYSQLI_ASSOC);
 } else {
-	$error = mysqli_error($connect);
-	$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-	print($page);
-	exit();
+	showError($connect);
 }
 
 // если АВТОРИЗОВАННЫЙ
@@ -51,36 +51,24 @@ if (isset($_SESSION["user"])) {
 			$tasks = mysqli_fetch_all($query, MYSQLI_ASSOC);
 
 		} else {
-			$error = mysqli_error($connect);
-			$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-			print($page);
-			exit();
+			showError($connect);
 		}
 
 
 	$sql = "
-	SELECT `projects`.`project` FROM `projects`
+	SELECT `projects`.`project`, `projects`.`id` FROM `projects`
 	JOIN `user`
 	ON `id_user` = `user`.`id`
 	WHERE	`email` = '$emailSID'
 	";
 
 	$query = mysqli_query($connect, $sql);
-	
-	if ($query) {
-		$projectsArray = mysqli_fetch_all($query, MYSQLI_ASSOC);
-
-		foreach ($projectsArray as $k => $val) {
-			$projects[] = $val['project'];
-		}
-
-
+	if ($query) {	
+		$projects = mysqli_fetch_all($query, MYSQLI_ASSOC);
 	} else {
-		$error = mysqli_error($connect);
-		$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-		print($page);
-		exit();
+		showError($connect);
 	}
+
 
 	$sql = "
 	SELECT `id` FROM `user`
@@ -91,10 +79,7 @@ if (isset($_SESSION["user"])) {
 	if ($query) {
 		$userID = mysqli_fetch_array($query, MYSQLI_NUM);
 	} else {
-		$error = mysqli_error($connect);
-		$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-		print($page);
-		exit();
+		showError($connect);
 	}
 
 	// отправка формы
@@ -104,7 +89,7 @@ if (isset($_SESSION["user"])) {
 	// добавление задачи
 		if (isset($_POST['taskSubmit'])) {
 
-		$required = ['name', 'project', 'date'];
+		$required = ['name', 'project'];
 		$rules = ['date'];
 		$errors = [];
 		$values = [];
@@ -112,6 +97,7 @@ if (isset($_SESSION["user"])) {
 	  $nameNew = $_POST['name'] ?? '';
 	  $projectNew = $_POST['project'] ?? '';
 	  $dateNew = $_POST['date'] ?? '';
+
 
 		foreach ($_POST as $k => $val) {
 			$values = $_POST;
@@ -124,6 +110,25 @@ if (isset($_SESSION["user"])) {
 			    $errors[$k] = 'неверный формат';
 			  }
 			}
+		}
+
+		$projectNew = mysqli_real_escape_string($connect, $projectNew);		
+
+		$sql = "
+		SELECT `projects`.`id` FROM `projects`
+		JOIN `user`
+		ON `id_user` = `user`.`id`
+		WHERE	`email` = '$emailSID' && `projects`.`id` = '$projectNew'
+		";
+		
+		$query = mysqli_query($connect, $sql);
+		if ($query) {
+			$projectID = mysqli_fetch_array($query, MYSQLI_NUM);
+			if (!$projectID) {
+				$errors['project'] = 'такой проект отсутствует';
+			}
+		} else {
+			showError($connect);
 		}
 
 		if (count($errors)) {
@@ -148,25 +153,11 @@ if (isset($_SESSION["user"])) {
 					$fileName = NULL;
 				}
 
-				$sql = "
-				SELECT `projects`.`id` FROM `projects`
-				JOIN `user`
-				ON `id_user` = `user`.`id`
-				WHERE	`email` = '$emailSID' && `project` = '$projectNew'
-				";
 
-				$query = mysqli_query($connect, $sql);
-				if ($query) {
-					$projectID = mysqli_fetch_array($query, MYSQLI_NUM);
-				} else {
-					$error = mysqli_error($connect);
-					$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-					print($page);
-					exit();
+				if (!($dateNew == '')) {
+					$dateNewTS = strtotime($dateNew);
+					$dateNew = date('Y.m.d', $dateNewTS);
 				}
-
-				$dateNewTS = strtotime($dateNew);
-				$dateNew = date('Y.m.d', $dateNewTS);
 
 				$nameNew = mysqli_real_escape_string($connect, $nameNew);
 
@@ -174,8 +165,8 @@ if (isset($_SESSION["user"])) {
 				INSERT INTO `tasks` SET
 				`create_date` = NOW(),
 				`task` = '$nameNew',
-				`dateDeadline` = '$dateNew',
-				`id_project` = '$projectID[0]',
+				`dateDeadline` = IF ('$dateNew' = '', NULL, '$dateNew'),
+				`id_project` = '$projectNew',
 				`done` = '0',
 				`file` = '$fileName',
 				`id_user` = '$userID[0]'
@@ -185,10 +176,8 @@ if (isset($_SESSION["user"])) {
 				if ($query) {
 					header('location: /index.php');
 				} else {
-					$error = mysqli_error($connect);
-					$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-					print($page);
-					exit();
+					showError($connect);
+
 				}
 			}
 
@@ -224,10 +213,8 @@ if (isset($_SESSION["user"])) {
 				if ($query) {
 					header('location: /index.php');
 				} else {
-					$error = mysqli_error($connect);
-					$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-					print($page);
-					exit();
+					showError($connect);
+
 				}
 
 			}
@@ -242,7 +229,7 @@ $projectKey = $_GET['project'] ?? false;
 if ($projectKey) {
 	if (count($projects) > $projectKey) {
 		foreach ($tasks as $k => $val) {
-			if ($val['project'] == $projects[$projectKey]) {
+			if ($val['project'] == $projects[$projectKey]['project']) {
 				$tasksSelect[] = $val;
 			}
 		}
@@ -250,26 +237,25 @@ if ($projectKey) {
 		http_response_code(404);
 		exit('<b>Ошибка 404</b>');
 	}
-} else {
+} 
+else {
 	$tasksSelect = $tasks;
 }
 
 
 if (isset($_GET['today'])) {
 	foreach ($tasks as $k => $val) {
-		$task_deadline_ts = strtotime($val['dateDeadline']);
-		$days_until_deadline = floor(($task_deadline_ts - $current_ts)/86400);
-		if (!($days_until_deadline == 0)) {
+			$days_until_deadline = countDays($current_ts, $val['dateDeadline']);
+			$today = (float)0;
+		if (!($days_until_deadline === $today)) {
 			unset($tasksSelect[$k]);
 		}
-
 	}
 }
 
 if (isset($_GET['tomorrow'])) {
 	foreach ($tasks as $k => $val) {
-		$task_deadline_ts = strtotime($val['dateDeadline']);
-		$days_until_deadline = floor(($task_deadline_ts - $current_ts)/86400);
+		$days_until_deadline = countDays($current_ts, $val['dateDeadline']);
 		if (!($days_until_deadline == 1)) {
 			unset($tasksSelect[$k]);
 		}
@@ -278,9 +264,7 @@ if (isset($_GET['tomorrow'])) {
 
 if (isset($_GET['overdue'])) {
 	foreach ($tasks as $k => $val) {
-
-		$task_deadline_ts = strtotime($val['dateDeadline']);
-		$days_until_deadline = floor(($task_deadline_ts - $current_ts)/86400);
+			$days_until_deadline = countDays($current_ts, $val['dateDeadline']);
 		if (!($days_until_deadline < 0)) {
 			unset($tasksSelect[$k]);
 		}
@@ -303,10 +287,7 @@ if ($userId) {
 	if ($query) {
 		header('Location: /index.php');
 	} else {
-		$error = mysqli_error($connect);
-		$page = includeTemplate('templates/error.php', ['error' => $error]);
-		print($page);
-		exit();
+		showError($connect);
 	}
 }
 
@@ -336,34 +317,33 @@ if (isset($_GET['show_completed'])) {
 
 
 // куки
+$showCompleted = $_COOKIE['showCompleted'] ?? false;
 
-if (isset($_COOKIE['showCompleted'])) {
-	if ($_COOKIE['showCompleted']) {
-		$checked = 'checked';
-		$show_completed = 0;
-	} else {
-		$checked = '';
-		$show_completed = 1;
-		foreach ($tasksSelect as $k => $val) {
-			if ($val['done'] == 1) {
-				unset($tasksSelect[$k]);
-			}
+if ($showCompleted) {
+	$checked = 'checked';
+	$show_completed = 0;
+} else {
+	$checked = '';
+	$show_completed = 1;
+	foreach ($tasksSelect as $k => $val) {
+		if ($val['done'] == 1) {
+			unset($tasksSelect[$k]);
 		}
 	}
-} else {
-		$checked = '';
-		$show_completed = 1;
-		foreach ($tasksSelect as $k => $val) {
-			if ($val['done'] == 1) {
-				unset($tasksSelect[$k]);
-			}
+	foreach ($tasks as $k => $val) {
+		if ($val['done'] == 1) {
+			unset($tasks[$k]);
 		}
+	}
 }
 
+
+$tasksSelect = $tasksSelect ?? '';
 
 $content = includeTemplate('templates/index.php', 
 [
 	'tasks' => $tasksSelect,
+	// 'tasksFocus' => $tasksFocus,
 	'show_completed' => $show_completed,
 	'checked' => $checked,
 ]);
@@ -371,6 +351,8 @@ $page = includeTemplate('templates/layout.php',
 [
   'content' => $content,
   'projects' => $projects,
+  // 'projectCount' => $projectCount,
+  // 'tasks' => $tasksSelect,
   'tasks' => $tasks,
   'title' => $title,
   'fio' => $fio,
@@ -433,22 +415,27 @@ print($page);
 		  $nameUser = $_POST['name'] ?? '';
 		  $emailUser = $_POST['email'] ?? '';
 		  $passwordUser = $_POST['password'] ?? '';
+			$values = $_POST;
 
 			foreach ($_POST as $k => $val) {
-
-				$values = $_POST;
-
 				if (in_array($k, $required) && $val == '') {
 					$errors[$k] = 'это поле требуется заполнить';
 				} else if (in_array($k, $filter)) {
-
 					$filtered = filter_var($val, FILTER_VALIDATE_EMAIL);
 					if ($filtered) {
-							foreach ($users as $val) {
-								if ($emailUser == $val['email']) {
-									$errors[$k] = 'такой email уже существует';
-								}
+						$sql = "
+						SELECT `id` FROM `user`
+						WHERE `email` = '$val'
+						";
+						$query = mysqli_query($connect, $sql);
+						if ($query) {
+							$emailId = mysqli_fetch_array($query, MYSQLI_NUM);
+							if ($emailId[0]) {
+								$errors[$k] = 'такой email уже существует';
 							}
+						} else {
+							showError($connect);
+						}
 					} else {
 						$errors[$k] = 'неверный формат email';
 					}
@@ -495,20 +482,21 @@ print($page);
 					`project` = 'Все',
 					`id_user` = '$currentId[0]'
 					";
-					$query1 = mysqli_query($connect, $sql);
-					if (!$query1) {
-						$error = mysqli_error($connect);
-						$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-						print($page);
-						exit();
+					$sql2 = "
+					INSERT INTO `projects` SET
+					`project` = 'Входящие',
+					`id_user` = '$currentId[0]'
+					";
+					$query = mysqli_query($connect, $sql);
+					$query2 = mysqli_query($connect, $sql2);
+					if (!$query || !$query2) {
+						showError($connect);
 					}
 
 					header('location: /index.php?login');
 				} else {
-					$error = mysqli_error($connect);
-					$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
-					print($page);
-					exit();
+					showError($connect);
+
 				}
 
 			}

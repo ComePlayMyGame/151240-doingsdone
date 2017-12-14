@@ -45,6 +45,31 @@ function searchUserByEmail($email, $users) {
   return false;
 }
 
+function showError($connect) {
+	$error = mysqli_error($connect);
+	$page = includeTemplate('templates/error.php', [ 'error' => $error	]);
+	print($page);
+	exit();
+}
+
+
+function countDays($ts, $date) {
+
+	if (isset($date)) {
+
+		$task_deadline_ts = strtotime($date);
+		$days_until_deadline = floor(($task_deadline_ts - $ts)/86400);
+		return $days_until_deadline;
+
+	} else {
+		return false;
+	}
+
+
+}
+
+
+
 
 
 
