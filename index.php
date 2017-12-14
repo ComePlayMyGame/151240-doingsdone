@@ -69,7 +69,6 @@ if (isset($_SESSION["user"])) {
 		showError($connect);
 	}
 
-
 	$sql = "
 	SELECT `id` FROM `user`
 	WHERE `email` = '$emailSID'
