@@ -25,13 +25,11 @@
         <select class="form__input form__input--select
         <?php if ($errors['project']) print('form__input--error')?>" name="project" id="project">
 
-          <!-- <option value="<?php if ($values['project']) print($values['project']) ?>">Входящие</option> -->
-
           <?php foreach ($projects as $k => $val): ?>
             <?php if ($k): ?>
 
-            <option <?php if ($values['project'] == $val) print('selected') ?>>
-            <?= $val ?>
+            <option <?php if ($values['project'] == $val['project']) print('selected') ?> value="<?= $val['id'] ?>">
+            <?= htmlspecialchars($val['project']) ?>
             </option>
 
             <?php endif ?>
