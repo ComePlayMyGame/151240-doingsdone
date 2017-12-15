@@ -1,6 +1,6 @@
 <?php
-// error_reporting(E_ALL);
-// ini_set('display_errors', 1);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 session_start();
 
@@ -500,6 +500,15 @@ print($page);
 
 			}
 
+
+			$guest = includeTemplate('templates/guest.php', 
+			[
+				'login' => $login,
+				'errors' => $errors,
+				'values' => $values
+			]);
+			print($guest);
+
 	}
 
 	}
@@ -508,13 +517,19 @@ print($page);
 		$login = true;
 	} else if (isset($_GET['register'])) {
 		print(includeTemplate('templates/register.php', []));
+		exit();
+	} else {
+		$login = false;
 	}
+
+
+	// if (isset($login) )
 
 	$guest = includeTemplate('templates/guest.php', 
 	[
 		'login' => $login,
-		'errors' => $errors,
-		'values' => $values,
+		// 'errors' => $errors,
+		// 'values' => $values,
 	]);
 	print($guest);
 
