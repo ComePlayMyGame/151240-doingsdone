@@ -1,6 +1,6 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 
 session_start();
 
@@ -404,6 +404,15 @@ print($page);
 			}
 		}
 
+
+		$guest = includeTemplate('templates/guest.php', 
+		[
+			'login' => $login,
+			'errors' => $errors,
+			'values' => $values
+		]);
+		print($guest);
+
 	}
 // зарегиться
 	if (isset($_POST['registerSubmit'])) {
@@ -453,6 +462,7 @@ print($page);
 					'values' => $values,
 				]);
 				print($page_reg);
+				exit();
 
 			} else {
 
@@ -504,14 +514,6 @@ print($page);
 
 	}
 
-
-	$guest = includeTemplate('templates/guest.php', 
-	[
-		'login' => $login,
-		'errors' => $errors,
-		'values' => $values
-	]);
-	print($guest);
 
 	}
 

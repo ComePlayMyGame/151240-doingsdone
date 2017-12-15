@@ -28,7 +28,7 @@
           <?php foreach ($projects as $k => $val): ?>
             <?php if ($k): ?>
 
-            <option <?php if (isset($values['project']) && ($values['project'] == $val['project'])) print('selected') ?> value="<?= $val['id'] ?>">
+            <option <?php if (isset($values['project']) && ($values['project'] == $val['id'])) print('selected') ?> value="<?= $val['id'] ?>">
             <?= htmlspecialchars($val['project']) ?>
             </option>
 
