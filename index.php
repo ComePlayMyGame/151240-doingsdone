@@ -81,6 +81,26 @@ if (isset($_SESSION["user"])) {
 		showError($connect);
 	}
 
+
+	$addVal = $_GET['add'] ?? '';
+
+	if (isset($_GET['add'])) {
+		$add = true;
+		$projectModal = ($addVal == 'projectModal') ? true : false;
+		$taskModal = ($addVal == 'taskModal') ? true : false;
+		$modal = includeTemplate('templates/modal.php', 
+		[
+			'projects' => $projects,
+			'taskModal' => $taskModal,
+			'projectModal' => $projectModal
+		]);
+	} else {
+		$add = false;
+		$modal = false;
+	}
+
+
+
 	// отправка формы
 
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -178,6 +198,8 @@ if (isset($_SESSION["user"])) {
 					showError($connect);
 
 				}
+
+				$modal = false;
 			}
 
 		}
@@ -195,7 +217,7 @@ if (isset($_SESSION["user"])) {
 				[
 					'projects' => $projects,
 					'error' => $error,
-					'values' => $values,
+					// 'values' => $values,
 					'projectModal' => $projectModal
 				]);
 			} else {
@@ -216,9 +238,37 @@ if (isset($_SESSION["user"])) {
 
 				}
 
+				$modal = false;
+
 			}
 		}
 	}
+
+
+
+// выполненные задачи
+if (isset($_GET['show_completed'])) {
+	$show_completed = $_GET['show_completed'];
+	setcookie('showCompleted', $show_completed, strtotime("+30 days"));
+	header('Location: /index.php');
+}
+
+
+// куки
+$showCompleted = $_COOKIE['showCompleted'] ?? false;
+
+if ($showCompleted) {
+	$checked = 'checked';
+	$show_completed = 0;
+} else {
+	$checked = '';
+	$show_completed = 1;
+	foreach ($tasks as $k => $val) {
+		if ($val['done'] == 1) {
+			unset($tasks[$k]);
+		}
+	}
+}
 
 
 // методы GET
@@ -236,10 +286,11 @@ if ($projectKey) {
 		http_response_code(404);
 		exit('<b>Ошибка 404</b>');
 	}
-} 
+}
 else {
 	$tasksSelect = $tasks;
 }
+
 
 
 if (isset($_GET['today'])) {
@@ -290,59 +341,12 @@ if ($userId) {
 	}
 }
 
-$addVal = $_GET['add'] ?? '';
-
-if (isset($_GET['add'])) {
-	$add = true;
-	if ($addVal == 'projectModal') {
-		$projectModal = true;
-	}
-	if ($addVal == 'taskModal') {
-		$taskModal = true;
-	}
-	$modal = includeTemplate('templates/modal.php', 
-	[
-		'projects' => $projects,
-		'taskModal' => $taskModal,
-		'projectModal' => $projectModal
-	]);
-}
-
-if (isset($_GET['show_completed'])) {
-	$show_completed = $_GET['show_completed'];
-	setcookie('showCompleted', $show_completed, strtotime("+30 days"));
-	header('Location: /index.php');
-}
-
-
-// куки
-$showCompleted = $_COOKIE['showCompleted'] ?? false;
-
-if ($showCompleted) {
-	$checked = 'checked';
-	$show_completed = 0;
-} else {
-	$checked = '';
-	$show_completed = 1;
-	foreach ($tasksSelect as $k => $val) {
-		if ($val['done'] == 1) {
-			unset($tasksSelect[$k]);
-		}
-	}
-	foreach ($tasks as $k => $val) {
-		if ($val['done'] == 1) {
-			unset($tasks[$k]);
-		}
-	}
-}
-
 
 $tasksSelect = $tasksSelect ?? '';
 
 $content = includeTemplate('templates/index.php', 
 [
 	'tasks' => $tasksSelect,
-	// 'tasksFocus' => $tasksFocus,
 	'show_completed' => $show_completed,
 	'checked' => $checked,
 ]);
@@ -350,8 +354,6 @@ $page = includeTemplate('templates/layout.php',
 [
   'content' => $content,
   'projects' => $projects,
-  // 'projectCount' => $projectCount,
-  // 'tasks' => $tasksSelect,
   'tasks' => $tasks,
   'title' => $title,
   'fio' => $fio,
@@ -402,6 +404,15 @@ print($page);
 			}
 		}
 
+
+		$guest = includeTemplate('templates/guest.php', 
+		[
+			'login' => $login,
+			'errors' => $errors,
+			'values' => $values
+		]);
+		print($guest);
+
 	}
 // зарегиться
 	if (isset($_POST['registerSubmit'])) {
@@ -451,6 +462,7 @@ print($page);
 					'values' => $values,
 				]);
 				print($page_reg);
+				exit();
 
 			} else {
 
@@ -502,19 +514,22 @@ print($page);
 
 	}
 
+
 	}
 
 	if (isset($_GET['login'])) {
 		$login = true;
 	} else if (isset($_GET['register'])) {
 		print(includeTemplate('templates/register.php', []));
+		exit();
+	} else {
+		$login = false;
 	}
+
 
 	$guest = includeTemplate('templates/guest.php', 
 	[
 		'login' => $login,
-		'errors' => $errors,
-		'values' => $values,
 	]);
 	print($guest);
 
