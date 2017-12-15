@@ -33,29 +33,29 @@
             <div class="form__row">
               <label class="form__label" for="email">E-mail <sup>*</sup></label>
 
-              <input class="form__input <?php if ($errors['email']) print('form__input--error')?>" type="text" name="email" id="email" value="<?php if ($values['email']) print($values['email']) ?>" placeholder="Введите e-mail">
+              <input class="form__input <?php if (isset($errors['email'])) print('form__input--error')?>" type="text" name="email" id="email" value="<?php if (isset($values['email'])) print($values['email']) ?>" placeholder="Введите e-mail">
 
-              <p class="form__message"><?php if ($errors['email']) print($errors['email'])?></p>
+              <p class="form__message"><?php if (isset($errors['email'])) print($errors['email'])?></p>
             </div>
 
             <div class="form__row">
               <label class="form__label" for="password">Пароль <sup>*</sup></label>
 
-              <input class="form__input <?php if ($errors['password']) print('form__input--error')?>" type="password" name="password" id="password" value="" placeholder="Введите пароль">
+              <input class="form__input <?php if (isset($errors['password'])) print('form__input--error')?>" type="password" name="password" id="password" value="" placeholder="Введите пароль">
 
-              <p class="form__message"><?php if ($errors['password']) print($errors['password'])?></p>
+              <p class="form__message"><?php if (isset($errors['password'])) print($errors['password'])?></p>
             </div>
 
             <div class="form__row">
               <label class="form__label" for="name">Имя <sup>*</sup></label>
 
-              <input class="form__input <?php if ($errors['name']) print('form__input--error')?>" type="text" name="name" id="name" value="<?php if ($values['name']) print($values['name']) ?>" placeholder="Введите имя">
+              <input class="form__input <?php if (isset($errors['name'])) print('form__input--error')?>" type="text" name="name" id="name" value="<?php if (isset($values['name'])) print($values['name']) ?>" placeholder="Введите имя">
 
-              <p class="form__message"><?php if ($errors['name']) print($errors['name'])?></p>
+              <p class="form__message"><?php if (isset($errors['name'])) print($errors['name'])?></p>
             </div>
 
             <div class="form__row form__row--controls">
-              <p class="error-message"><?php if ($errors) print('Пожалуйста, исправьте ошибки в форме') ?></p>
+              <p class="error-message"><?php if (isset($errors)) print('Пожалуйста, исправьте ошибки в форме') ?></p>
 
               <input class="button" type="submit" name="registerSubmit" value="Зарегистрироваться">
             </div>
